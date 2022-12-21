@@ -39,17 +39,7 @@ for i in var_quali :
 data.FlagImpaye.value_counts()
 
 # split variable to have date and hour
-liste_date = []
-liste_heure = []
-for i in data.DateTransaction :
-                pos = i.find(" ")
-                temp = i[0 : pos]
-                temp2 = i[pos : len(i)]
-                liste_date.append(temp)
-                liste_heure.append(temp2)
-                
-data["date"] = liste_date
-data["heure_split"] = liste_heure
+data[['Date','Heure_split']] = data.DateTransaction.str.split(expand=True)
 
 
     
