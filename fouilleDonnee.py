@@ -8,7 +8,11 @@ import os
 import pandas as pd 
 import matplotlib as plt
 import seaborn as sns
-os.chdir("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive")
+
+try:
+    os.chdir("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive")
+except:
+    os.chdir("/Users/titouanhoude/Documents/GitHub/FouilleDonneeMassive")
 
 data = pd.read_csv("guillaume.txt", sep = ";")
 
@@ -28,7 +32,6 @@ var_quali = ["FlagImpaye" , "IDAvisAutorisationCheque" , "CodeDecision"]
 for i in var_quanti :
     
     data[i] = data[i].replace(",", ".", regex= True).astype(float).round(0)
-    
 
 for i in var_quali :
     
@@ -40,7 +43,6 @@ data.FlagImpaye.value_counts()
 
 # split variable to have date and hour
 data[['Date','Heure_split']] = data.DateTransaction.str.split(expand=True)
-
 
 
 index = 0
@@ -56,6 +58,8 @@ for i in data['Date'] :
 
 test = data.iloc[index:, :]
 
+### Convertir to float ###
+data = data.apply(pd.to_numeric, downcast = "float", errors = "coerce")
 
 
 from sklearn import preprocessing
