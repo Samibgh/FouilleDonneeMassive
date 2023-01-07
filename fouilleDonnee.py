@@ -6,11 +6,20 @@ Created on Wed Dec 21 18:51:12 2022
 """
 import os 
 import pandas as pd 
-import matplotlib as plt
-import seaborn as sns
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import f1_score
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import GradientBoostingClassifier
+from imblearn.over_sampling import BorderlineSMOTE
 
 try:
-    os.chdir("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive")
+    os.chdir("C:/Users/Sam/Documents/SISE/Fouille de données")
 except:
     os.chdir("/Users/titouanhoude/Documents/GitHub/FouilleDonneeMassive")
 
@@ -44,6 +53,9 @@ data.FlagImpaye.value_counts()
 # split variable to have date and hour
 data[['Date','Heure_split']] = data.DateTransaction.str.split(expand=True)
 
+### Convertir to float ###
+data = data.apply(pd.to_numeric, downcast = "float", errors = "coerce")
+
 
 index = 0
 for i in data['Date'] : 
@@ -58,8 +70,6 @@ for i in data['Date'] :
 
 test = data.iloc[index:, :]
 
-### Convertir to float ###
-data = data.apply(pd.to_numeric, downcast = "float", errors = "coerce")
 
 
 from sklearn import preprocessing
@@ -76,19 +86,6 @@ Xtest  = test.drop(["FlagImpaye"], axis = 1)
 Ytest  = test.FlagImpaye
 
 
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import f1_score
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
-from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.ensemble import GradientBoostingClassifier
-from imblearn.over_sampling import BorderlineSMOTE
-
 sm = BorderlineSMOTE(randomstate = 11)
 XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
 names=[]
@@ -103,8 +100,6 @@ models={'SVC': SVC(),
        'LDA': LinearDiscriminantAnalysis(),
        'GradientBoosting' : GradientBoostingClassifier(), 
        }
-
-#X = parcDisney.drop(["Note"], axis = 1)
 
 for name, model in models.items():
     name_model = model
