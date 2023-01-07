@@ -87,7 +87,10 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import GradientBoostingClassifier
+from imblearn.over_sampling import BorderlineSMOTE
 
+sm = BorderlineSMOTE(randomstate = 11)
+XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
 names=[]
 f1score_ =[]
 
@@ -105,7 +108,7 @@ models={'SVC': SVC(),
 
 for name, model in models.items():
     name_model = model
-    name_fit = name_model.fit(Xtrain,Ytrain)
+    name_fit = name_model.fit(XBdSmote,YBdSmote)
     name_pred = name_fit.predict(Xtest)
     f1score = f1_score(Ytest,name_pred, average = "macro")
     names.append(name)
@@ -114,6 +117,10 @@ for name, model in models.items():
 score_df = pd.DataFrame(zip(names, f1score_))
 score_df.columns = ["Nom", "Score"]
 
+try: 
+    score_df.to_csv('/Users/titouanhoude/Documents/GitHub/FouilleDonneeMassive/res.csv', index = False, sep=';', encoding='utf-8')
+except:
+    score_df.to_csv('C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/res.csv', index = False, sep=';', encoding='utf-8')
 
 
     
