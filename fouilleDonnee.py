@@ -22,7 +22,7 @@ import dask.dataframe as dd
 try:
     os.chdir("C:/Users/Sam/Documents/SISE/Fouille de données")
 except:
-    os.chdir("/Users/titouanhoude/Documents/GitHub/FouilleDonneeMassive")
+    os.chdir("/Users/titouanhoude/Documents/GitHub")
 
 data = pd.read_csv("guillaume.txt", sep = ";")
 data.info()
@@ -51,7 +51,7 @@ for i in var_quali :
 data.FlagImpaye.value_counts()
 
 # split variable to have date and hour
-data[['Date','Heure_split']] = data.DateTransaction.str.split(expand=True)
+data[['Date','Heure_split']] = data.DateTransaction.str.split(" ", expand=True)
 
 ### Convertir to float ###
 #data = data.apply(pd.to_numeric, downcast = "float", errors = "coerce")
@@ -92,8 +92,6 @@ Xtrain = train.drop(["FlagImpaye", "ZIBZIN", "Date", "Heure_split", "DateTransac
 
 Ytrain = pd.DataFrame(train.FlagImpaye)
 Ytrain = Ytrain['FlagImpaye'].astype('int')
-
-
 
 Xtest  = test.drop(["FlagImpaye","ZIBZIN", "Date", "Heure_split", "DateTransaction"], axis = 1)
 Ytest  = test.FlagImpaye
