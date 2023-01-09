@@ -72,22 +72,42 @@ test = data.iloc[index:, :]
 
 
 
+"""
 from sklearn import preprocessing
 le = preprocessing.LabelEncoder()
 for i in range(train.shape[1]):
     train.loc[:,i] = le.fit_transform(train.loc[:,i])
     
     test.loc[:,i] = le.fit_transform(test.loc[:,i])
+"""
+
+Xtrain = train.drop(["FlagImpaye", "ZIBZIN", "Date", "Heure_split", "DateTransaction"], axis = 1)
+
+Ytrain = pd.DataFrame(train.FlagImpaye)
+Ytrain = Ytrain['FlagImpaye'].astype('int')
 
 
-Xtrain = train.drop(["FlagImpaye"], axis = 1)
-Ytrain = train.FlagImpaye
-Xtest  = test.drop(["FlagImpaye"], axis = 1)
+
+Xtest  = test.drop(["FlagImpaye","ZIBZIN", "Date", "Heure_split", "DateTransaction"], axis = 1)
 Ytest  = test.FlagImpaye
 
 
-sm = BorderlineSMOTE(randomstate = 11)
-XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
+
+from joblib import Parallel, delayed
+
+sm = BorderlineSMOTE(random_state = 0)
+#XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
+
+def echant(ech, X, Y):
+    
+    XBdSmote , YBdSmote = ech.fit_resample(X, Y)
+    
+    return XBdSmote , YBdSmote
+
+
+result = Parallel(n_jobs=4)(delayed(echant)(sm,Xtrain, Ytrain) for i in range(5))
+
+
 names=[]
 f1score_ =[]
 
@@ -101,6 +121,28 @@ models={'SVC': SVC(),
        'GradientBoosting' : GradientBoostingClassifier(), 
        }
 
+def train_model(X, y,Xtest, name, model):
+        
+    name_model = model
+    name_fit = name_model.fit(X,y)
+    name_pred = name_fit.predict(Xtest)
+    f1score = f1_score(Ytest,name_pred, average = "macro")
+    names.append(name)
+    f1score_.append(f1score)
+    
+    return names, f1score_
+
+
+Model = Parallel(n_jobs=4)(delayed(train_model)(result[0], result[1],Xtest,name, model) for name, model in models.items())
+
+
+score_df = pd.DataFrame(zip(Model[0], Model[1]))
+score_df.columns = ["Nom", "Score"]
+
+score_df.to_csv("res.csv")
+
+
+"""
 for name, model in models.items():
     name_model = model
     name_fit = name_model.fit(XBdSmote,YBdSmote)
@@ -116,6 +158,5 @@ try:
     score_df.to_csv('/Users/titouanhoude/Documents/GitHub/FouilleDonneeMassive/res.csv', index = False, sep=';', encoding='utf-8')
 except:
     score_df.to_csv('C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/res.csv', index = False, sep=';', encoding='utf-8')
-
-
+"""
     
