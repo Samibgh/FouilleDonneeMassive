@@ -105,7 +105,7 @@ def echant(ech, X, Y):
     return XBdSmote , YBdSmote
 
 
-result = Parallel(n_jobs=4)(delayed(echant)(sm,Xtrain, Ytrain) for i in range(5))
+result = Parallel(n_jobs=4)(delayed(echant)(sm,Xtrain, Ytrain) for i in range(1))
 
 
 names=[]
