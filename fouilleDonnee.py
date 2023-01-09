@@ -17,6 +17,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import GradientBoostingClassifier
 from imblearn.over_sampling import BorderlineSMOTE
+import dask.dataframe as dd
 
 try:
     os.chdir("C:/Users/Sam/Documents/SISE/Fouille de données")
@@ -24,7 +25,6 @@ except:
     os.chdir("/Users/titouanhoude/Documents/GitHub/FouilleDonneeMassive")
 
 data = pd.read_csv("guillaume.txt", sep = ";")
-
 data.info()
 
 data.head()
@@ -54,7 +54,7 @@ data.FlagImpaye.value_counts()
 data[['Date','Heure_split']] = data.DateTransaction.str.split(expand=True)
 
 ### Convertir to float ###
-data = data.apply(pd.to_numeric, downcast = "float", errors = "coerce")
+#data = data.apply(pd.to_numeric, downcast = "float", errors = "coerce")
 
 
 index = 0
@@ -71,6 +71,13 @@ for i in data['Date'] :
 test = data.iloc[index:, :]
 
 
+train.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/train.csv")
+test.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/test.csv")
+
+
+
+train = pd.read_csv('train.csv')
+test = pd.read_csv('test.csv')
 
 """
 from sklearn import preprocessing
@@ -94,7 +101,9 @@ Ytest  = test.FlagImpaye
 
 
 from joblib import Parallel, delayed
+import joblib
 
+"""
 sm = BorderlineSMOTE(random_state = 0)
 #XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
 
@@ -105,8 +114,8 @@ def echant(ech, X, Y):
     return XBdSmote , YBdSmote
 
 
-result = Parallel(n_jobs=4)(delayed(echant)(sm,Xtrain, Ytrain) for i in range(1))
-
+result = Parallel(n_jobs=2)(delayed(echant)(sm,Xtrain, Ytrain) for i in range(1))
+"""
 
 names=[]
 f1score_ =[]
@@ -121,6 +130,26 @@ models={'SVC': SVC(),
        'GradientBoosting' : GradientBoostingClassifier(), 
        }
 
+
+with joblib.parallel_backend('multiprocessing', n_jobs=5) as parallel:
+    
+    sm = BorderlineSMOTE(random_state = 0)
+    XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
+
+    
+    for name, model in models.items():
+        name_model = model
+        name_fit = name_model.fit(XBdSmote , YBdSmote)
+        name_pred = name_fit.predict(Xtest)
+        f1score = f1_score(Ytest,name_pred, average = "macro")
+        names.append(name)
+        f1score_.append(f1score)
+        
+score_df = pd.DataFrame(zip(names, f1score_))
+score_df.columns = ["Nom", "Score"]
+
+
+"""
 def train_model(X, y,Xtest, name, model):
         
     name_model = model
@@ -132,13 +161,13 @@ def train_model(X, y,Xtest, name, model):
     
     return names, f1score_
 
-
-Model = Parallel(n_jobs=4)(delayed(train_model)(result[0], result[1],Xtest,name, model) for name, model in models.items())
+                               
+Model = Parallel(n_jobs=8)(delayed(train_model)(result[0], result[1],Xtest,name, model) for name, model in models.items())
 
 
 score_df = pd.DataFrame(zip(Model[0], Model[1]))
 score_df.columns = ["Nom", "Score"]
-
+"""
 score_df.to_csv("res.csv")
 
 
