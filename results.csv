@@ -1,0 +1,6 @@
+Nom;Score;;;;;
+RandomForest;0.514889;;;;;
+DecisionTree;0.488939;;;;;
+Neural Network;0.008718;;;;;
+knn;0.497791;;;;;
+GradientBoosting;0.555998;;;;;
