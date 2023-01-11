@@ -177,12 +177,17 @@ pred = model.predict(Xtest)
 
 f1score = f1_score(Ytest,pred, average = "macro")
 
-tab = classification_report(Ytest,pred)
+tab = classification_report(Ytest,pred, output_dict=True)
+tab = pd.DataFrame(tab).transpose()
 
 print(tab)
 
 roc_auc_score(Ytest,pred)
 
+XBdSmote.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/Xgboost/Xtrain_smote.csv")
+YBdSmote.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/Xgboost/Ytrain_smote.csv")
+
+tab.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/Xgboost/tableauSmote_score_xgboost.csv")
 
 
 #########witrh adasyn #############
@@ -233,9 +238,6 @@ def gridsearch(model):
 results = Parallel(n_jobs=4)(delayed(gridsearch)(XGBRFClassifier()) for _ in range(1))
 
 
-
-
-def testPerfModel(model, MethodeEch) :
     
 
 
