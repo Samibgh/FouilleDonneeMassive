@@ -126,3 +126,118 @@ ax1.set_title('One-Class SVM Predictions')
 ax1.scatter(df_test['feature1'], df_test['feature2'], c=df_test['one_class_svm_prediction'], cmap='rainbow')
 ax2.set_title('One-Class SVM Predictions With Customized Threshold')
 ax2.scatter(df_test['feature1'], df_test['feature2'], c=df_test['one_class_svm_prediction_cutomized'], cmap='rainbow')
+
+
+################## XGboost Random Forest ##################
+from xgboost import XGBRFClassifier
+from imblearn.pipeline import Pipeline
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RepeatedStratifiedKFold
+from imblearn.under_sampling import OneSidedSelection
+from sklearn.metrics import classification_report
+from sklearn.metrics import roc_auc_score
+
+sm = BorderlineSMOTE(random_state = 0)
+oss = OneSidedSelection(random_state=0)
+
+steps = [('u', oss), ('m', DecisionTreeClassifier())]
+pipeline = Pipeline(steps=steps)
+
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+scores = cross_val_score(pipeline, Xtrain, Ytrain, scoring='f1_micro', cv=cv, n_jobs=-1)
+score = np.mean(scores)
+print('F1 Score: %.3f' % score)
+
+
+
+XBdSmote , YBdSmote = oss.fit_resample(Xtrain, Ytrain)
+
+mod = DecisionTreeClassifier()
+
+mod.fit(Xtrain, Ytrain)
+
+pred1 = mod.predict(Xtest)
+
+f1score1 = f1_score(Ytest,pred1, average = "macro")
+
+tab1 = classification_report(Ytest,pred1)
+
+print(tab1)
+
+roc_auc_score(Ytest,pred1)
+
+#########################################################
+sm = BorderlineSMOTE(random_state = 0)
+
+XBdSmote , YBdSmote = sm.fit_resample(Xtrain, Ytrain)
+model = XGBRFClassifier()
+model.fit(XBdSmote , YBdSmote)
+
+pred = model.predict(Xtest)
+
+f1score = f1_score(Ytest,pred, average = "macro")
+
+tab = classification_report(Ytest,pred)
+
+print(tab)
+
+roc_auc_score(Ytest,pred)
+
+
+
+#########witrh adasyn #############
+from imblearn.over_sampling import ADASYN
+ada = ADASYN(random_state=0)
+XBdSada , YBdada= ada.fit_resample(Xtrain, Ytrain)
+
+model = XGBRFClassifier()
+model.fit(XBdSada , YBdada)
+
+pred2 = model.predict(Xtest)
+
+f1score2 = f1_score(Ytest,pred2, average = "macro")
+
+tab2 = classification_report(Ytest,pred2,output_dict=True)
+tab2 = pd.DataFrame(tab2).transpose()
+
+print(tab2)
+
+roc_auc_score(Ytest,pred2)
+
+
+XBdSada.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/Xgboost/Xtrain_Adasyn.csv")
+YBdada.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/Xgboost/Ytrain_Adasyn.csv")
+
+tab2.to_csv("C:/Users/Sam/Documents/GitHub/FouilleDonneeMassive/Xgboost/tableau_score_xgboost.csv")
+
+
+########grid search xgboost ###############
+
+
+params = {
+        'gamma': [0.5, 1],
+        'max_depth': [3, 4, 5],
+        'learning_rate': [0.1, 0.01, 0.05],
+        
+        }
+
+crossvalidation=KFold(n_splits=2,shuffle=True,random_state=1)
+
+def gridsearch(model):
+
+    search1=GridSearchCV(estimator=model,param_grid=parameters,n_jobs=1,cv=crossvalidation)
+    search1.fit(XBdSada,YBdada)
+    
+    return search1
+    
+results = Parallel(n_jobs=4)(delayed(gridsearch)(XGBRFClassifier()) for _ in range(1))
+
+
+
+
+def testPerfModel(model, MethodeEch) :
+    
+
+
+
+
