@@ -106,7 +106,7 @@ import matplotlib.pyplot as plt
 
 prediction = clf.predict(Xtest)
 prediction = [1 if i==-1 else 0 for i in prediction]
-print(classification_report(Xtest, prediction))
+print(classification_report(Ytest, prediction))
 
 
 score = clf.score_samples(Xtest)
@@ -115,7 +115,7 @@ customized_prediction = [1 if i < score_threshold else 0 for i in score]
 print(classification_report(Ytest, customized_prediction))
 
 
-df_test = pd.DataFrame(Xtest, columns=['feature1', 'feature2'])
+df_test = pd.DataFrame(Xtest, columns=['feature1', 'feature2', ])
 df_test['y_test'] = Ytest
 df_test['one_class_svm_prediction'] = prediction
 df_test['one_class_svm_prediction_cutomized'] = customized_prediction
